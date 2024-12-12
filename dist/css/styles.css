@@ -1,0 +1,80 @@
+/* Navbar Styles */
+.navbar {
+    background-color: #343a40; /* Dark background */
+    border-bottom: 1px solid #4b4b4b; /* Subtle border */
+}
+.navbar .nav-link {
+    color: #ffffff; /* White text */
+    transition: color 0.3s;
+}
+.navbar .nav-link:hover {
+    color: #17a2b8; /* Light blue hover */
+}
+.navbar .navbar-search-block {
+    background-color: #495057; /* Slightly lighter dark */
+    padding: 10px;
+    border-radius: 5px;
+}
+.navbar .form-control-navbar {
+    background-color: #6c757d; /* Medium dark */
+    color: #ffffff; /* White text */
+    border: none;
+}
+.navbar .form-control-navbar::placeholder {
+    color: #ced4da; /* Placeholder text color */
+}
+.navbar .btn-navbar {
+    color: #ffffff;
+}
+
+/* Sidebar Styles */
+.main-sidebar {
+    background-color: #343a40; /* Match navbar */
+}
+.sidebar .user-panel a {
+    color: #ffffff; /* White text */
+    font-weight: bold;
+}
+.sidebar .nav-sidebar > .nav-item > .nav-link {
+    color: #adb5bd; /* Gray text */
+    transition: background-color 0.3s, color 0.3s;
+}
+.sidebar .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: #495057; /* Highlight on hover */
+    color: #ffffff; /* White text */
+}
+.sidebar .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: #007bff; /* Active link background */
+    color: #ffffff; /* White text */
+}
+.sidebar .nav-icon {
+    margin-right: 10px;
+    color: #adb5bd; /* Gray icon color */
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    background-color: #343a40; /* Dark background */
+    border: none;
+    border-radius: 0.25rem;
+}
+.dropdown-menu .dropdown-item {
+    color: #ffffff; /* White text */
+    transition: background-color 0.3s, color 0.3s;
+}
+.dropdown-menu .dropdown-item:hover {
+    background-color: #495057; /* Hover effect */
+    color: #ffffff;
+}
+
+/* General Styling */
+body {
+    font-family: "Arial", sans-serif;
+    background-color: #f8f9fa; /* Light gray */
+}
+.bg-dark {
+    background-color: #343a40 !important;
+}
+.text-white {
+    color: #ffffff !important;
+}
