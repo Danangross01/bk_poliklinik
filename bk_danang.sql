@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 05 Des 2024 pada 21.03
+-- Waktu pembuatan: 13 Des 2024 pada 05.26
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -77,7 +77,7 @@ CREATE TABLE `dokter` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) DEFAULT NULL,
   `alamat` varchar(255) DEFAULT NULL,
-  `no_hp` varchar(50) DEFAULT NULL,
+  `no_hp` int UNSIGNED NOT NULL,
   `id_poli` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
@@ -86,7 +86,7 @@ CREATE TABLE `dokter` (
 --
 
 INSERT INTO `dokter` (`id`, `nama`, `alamat`, `no_hp`, `id_poli`) VALUES
-(11, 'Danang', 'Semarang', '489921018', 1),
+(11, 'Ifan', 'Semarang', '489921018', 1),
 (15, 'DanangPrasetya', 'Semarang', '82218516663', 1);
 
 -- --------------------------------------------------------
@@ -150,8 +150,8 @@ CREATE TABLE `pasien` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) NOT NULL,
   `alamat` varchar(255) NOT NULL,
-  `no_ktp` varchar(255) NOT NULL,
-  `no_hp` varchar(50) NOT NULL,
+  `no_ktp` int UNSIGNED NOT NULL,
+  `no_hp` int UNSIGNED NOT NULL,
   `no_rm` varchar(25) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
@@ -163,7 +163,8 @@ INSERT INTO `pasien` (`id`, `nama`, `alamat`, `no_ktp`, `no_hp`, `no_rm`) VALUES
 (10, 'test1', 'test', '1245', '87724414526', NULL),
 (30, 'Pasien', 'Semarang', '313013010', '0823131', '202412-001'),
 (31, 'Pasien2', 'Semarang', '02313123', '08212131', '202412-002'),
-(32, 'Pasien3', 'Semarang', '3023020', '08221231', '202412-003');
+(32, 'Pasien3', 'Semarang', '3023020', '08221231', '202412-003'),
+(33, 'Adi', 'Semarang', '33200', '08231', '202412-004');
 
 -- --------------------------------------------------------
 
@@ -288,7 +289,7 @@ ALTER TABLE `detail_periksa`
 -- AUTO_INCREMENT untuk tabel `dokter`
 --
 ALTER TABLE `dokter`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT untuk tabel `jadwal_periksa`
@@ -300,13 +301,13 @@ ALTER TABLE `jadwal_periksa`
 -- AUTO_INCREMENT untuk tabel `obat`
 --
 ALTER TABLE `obat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT untuk tabel `pasien`
 --
 ALTER TABLE `pasien`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT untuk tabel `periksa`
@@ -318,7 +319,7 @@ ALTER TABLE `periksa`
 -- AUTO_INCREMENT untuk tabel `poli`
 --
 ALTER TABLE `poli`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
