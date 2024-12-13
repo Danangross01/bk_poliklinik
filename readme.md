@@ -48,8 +48,8 @@ Sistem Manajemen Poliklinik adalah aplikasi yang dirancang untuk mempermudah pro
 3. **Gunakan server web seperti Apache atau XAMPP.**
 4. **Arahkan server ke direktori publik aplikasi.**
 5. **Impor Database**
-
-6. **Impor file poliklinik.sql ke MySQL menggunakan tools seperti phpMyAdmin atau CLI.**
+   **buat nama database di phpmyadmin dengan nama bk_danang**
+6. **Impor file bk_danang.sql ke MySQL menggunakan tools seperti phpMyAdmin atau CLI.**
 7. **Konfigurasi Koneksi Database**
 
 8. **Ubah konfigurasi di file config/conn.php sesuai pengaturan database Anda.**
