@@ -1,17 +1,20 @@
 <?php
 session_start();
 include_once("../../config/conn.php");
-
+//Memeriksa Status Login
 if (isset($_SESSION['login'])) {
   echo "<meta http-equiv='refresh' content='0; url=../..'>";
   die();
 }
-
+//Menangani Login
 if (isset($_POST['klik'])) {
+ //Input Username dan Password
   $username = stripslashes($_POST['nama']);
   $password = $_POST['alamat'];
+  //Login Admin
   if ($username == 'admin') {
     if ($password == 'admin') {
+      //Validasi dan Login Dokter
       $_SESSION['login'] = true;
       $_SESSION['id'] = null;
       $_SESSION['username'] = 'admin';

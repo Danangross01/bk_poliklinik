@@ -78,7 +78,6 @@ if (isset($_POST['klik'])) {
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
 
-
   <?php include "../../../layouts/header.php"?>
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -174,7 +173,8 @@ if (isset($_POST['klik'])) {
                       <th>Hari</th>
                       <th>Jam</th>
                       <th>Antrian</th>
-                      <th>Aksi</th>
+                      <th>Rincian Harga</th>
+                      <th>Detail Poli</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -184,8 +184,11 @@ if (isset($_POST['klik'])) {
                                                   b.hari as jadwal_hari, 
                                                   CONCAT(b.jam_mulai, ' - ', b.jam_selesai) as jadwal_jam,
                                                   a.no_antrian as antrian,
-                                                  a.id as poli_id
+                                                  a.id as poli_id,
+                                                  a.status_periksa as status,
+                                                  p.biaya_periksa as biaya
                                               FROM daftar_poli as a
+                                              LEFT JOIN periksa as p ON a.id = p.id_daftar_poli
                                               INNER JOIN jadwal_periksa as b ON a.id_jadwal = b.id
                                               INNER JOIN dokter as c ON b.id_dokter = c.id
                                               INNER JOIN poli as d ON c.id_poli = d.id
@@ -194,9 +197,10 @@ if (isset($_POST['klik'])) {
                     $poli->execute();
                     $no = 1;
                     if ($poli->rowCount() == 0) {
-                      echo "<tr><td colspan='7' class='text-center'>Tidak ada data.</td></tr>";
+                      echo "<tr><td colspan='8' class='text-center'>Tidak ada data.</td></tr>";
                     } else {
                       while($p = $poli->fetch()) {
+                        $rincian_harga = ($p['status'] == 1) ? 'Rp. ' . number_format($p['biaya'], 0, ',', '.') : 'Belum diperiksa';
                     ?>
                     <tr>
                       <td><?= $no++ ?></td>
@@ -205,6 +209,7 @@ if (isset($_POST['klik'])) {
                       <td><?= $p['jadwal_hari'] ?></td>
                       <td><?= $p['jadwal_jam'] ?></td>
                       <td><?= $p['antrian'] ?></td>
+                      <td><?= $rincian_harga ?></td>
                       <td>
                         <a href="detail_poli.php/<?= $p['poli_id'] ?>" class="btn btn-sm btn-success">Detail</a>
                       </td>

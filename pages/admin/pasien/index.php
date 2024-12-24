@@ -1,25 +1,25 @@
 <?php
 include_once("../../../config/conn.php");
 session_start();
-
+//Validasi Login dan Hak Akses
 if (isset($_SESSION['login'])) {
-  $_SESSION['login'] = true;
+    $_SESSION['login'] = true;
 } else {
-  echo "<meta http-equiv='refresh' content='0; url=../auth/login.php'>";
-  die();
+    echo "<meta http-equiv='refresh' content='0; url=../auth/login.php'>";
+    die();
 }
 
 $nama = $_SESSION['username'];
 $akses = $_SESSION['akses'];
 
 if ($akses != 'admin') {
-  echo "<meta http-equiv='refresh' content='0; url=../..'>";
-  die();
+    echo "<meta http-equiv='refresh' content='0; url=../..'>";
+    die();
 }
 ?>
 <?php
 $title = 'Poliklinik | Obat';
-// Breadcrumb section
+// Breadcrumb section Menampilkan breadcrumb untuk navigasi
 ob_start();?>
 <ol class="breadcrumb float-sm-right">
   <li class="breadcrumb-item"><a href="<?= $base_admin; ?>">Home</a></li>
@@ -36,13 +36,13 @@ Tambah / Edit Pasien
 $main_title = ob_get_clean();
 ob_flush();
 
-
 // Content section
 ob_start();
 
 ?>
 <form class="form col" method="POST" action="" required name="myForm" onsubmit="return(validate());">
 <?php
+//Form Input Tambah/Ubah Pasien
     $nama = '';
     $alamat = '';
     $no_hp = '';
@@ -71,9 +71,7 @@ ob_start();
     }
     
     // Jika sedang dalam mode ubah, isi Nomor RM sesuai data yang diubah
-    if (isset($_GET['id'])) {
-        $no_rm = $no_rm;
-    } else {
+    if (!isset($_GET['id'])) {
         // Jika menambahkan data baru, hitung Nomor RM sesuai format
         $tahun_bulan = date("Ym");
         $query_last_id = "SELECT MAX(CAST(SUBSTRING(no_rm, 8) AS SIGNED)) as last_queue_number FROM pasien";
@@ -95,29 +93,28 @@ ob_start();
             <label for="alamat" class="form-label fw-bold">
                 Alamat
             </label>
-            <input type="text" class="form-control" required name="alamat" id="alamat" placeholder="alamat" value="<?php echo $alamat ?>">
+            <input type="text" class="form-control" required name="alamat" id="alamat" placeholder="Alamat" value="<?php echo $alamat ?>">
         </div>
         <div class="row mt-3">
             <label for="no_ktp" class="form-label fw-bold">
                 Nomor KTP
             </label>
-            <input type="number" class="form-control" required name="no_ktp" id="no_ktp" placeholder="no_ktp" value="<?php echo $no_ktp ?>">
+            <input type="number" class="form-control" required name="no_ktp" id="no_ktp" placeholder="Nomor KTP" value="<?php echo $no_ktp ?>">
         </div>
 
         <div class="row mt-3">
             <label for="no_hp" class="form-label fw-bold">
                 Nomor Hp
             </label>
-            <input type="number" class="form-control" required name="no_hp" id="no_hp" placeholder="no_hp" value="<?php echo $no_hp ?>">
+            <input type="number" class="form-control" required name="no_hp" id="no_hp" placeholder="Nomor HP" value="<?php echo $no_hp ?>">
         </div>
 
         <div class="row mt-3">
             <label for="no_rm" class="form-label fw-bold">
                 Nomor RM
             </label>
-            <input type="text" class="form-control" required name="no_rm" id="no_rm" disabled placeholder="no_rm" value="<?php echo $no_rm ?>">
+            <input type="text" class="form-control" required name="no_rm" id="no_rm" readonly placeholder="Nomor RM" value="<?php echo $no_rm ?>">
         </div>
-
 
         <div class="row d-flex mt-3 mb-3">
           <button type="submit" class="btn btn-primary" style="width: 3cm;" required name="simpan">Simpan</button>
@@ -149,6 +146,7 @@ ob_start();
       </thead>
       <tbody>
         <?php
+        // Tabel Data Pasien
         $result = $pdo->query("SELECT * FROM pasien");
         $no = 1;
         while ($data = $result->fetch(PDO::FETCH_ASSOC)) {

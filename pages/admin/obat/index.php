@@ -19,7 +19,7 @@ if ($akses != 'admin') {
 
 $title = 'Poliklinik | Obat';
 
-// Breadcrumb section
+// Breadcrumb section Membuat breadcrumb untuk navigasi
 ob_start(); ?>
 <ol class="breadcrumb float-sm-right">
     <li class="breadcrumb-item"><a href="<?= $base_admin; ?>">Home</a></li>
@@ -42,7 +42,7 @@ ob_start();
 <form class="form col" method="POST" action="" name="myForm" onsubmit="return(validate());">
     <?php
     $id = $nama_obat = $kemasan = $harga = '';
-
+    //Form Tambah/Edit Data Obat
     if (isset($_GET['id'])) {
         try {
             $stmt = $pdo->prepare("SELECT * FROM obat WHERE id = :id");
@@ -60,6 +60,7 @@ ob_start();
             echo "Error: " . $e->getMessage();
         }
     }
+    //Input Data Obat
     ?>
     <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
     <div class="row mt-3">
@@ -99,6 +100,7 @@ ob_start();
             </thead>
             <tbody>
                 <?php
+                //Menampilkan Data: Data dari tabel obat 
                 try {
                     $stmt = $pdo->query("SELECT * FROM obat ORDER BY id ASC");
                     $no = 1;

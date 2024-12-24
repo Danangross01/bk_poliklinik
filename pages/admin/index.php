@@ -16,7 +16,7 @@ if ($akses != 'admin') {
   echo "<meta http-equiv='refresh' content='0; url=../..'>";
   die();
 }
-
+//Mengambil Data Ringkasan dari database, pasien, dokter, obat
 $totalPatientsQuery = "SELECT COUNT(*) as total FROM pasien";
 $totalPatientsResult = mysqli_query($conn, $totalPatientsQuery);
 $totalPatients = mysqli_fetch_assoc($totalPatientsResult)['total'];

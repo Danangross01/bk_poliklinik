@@ -1,7 +1,7 @@
 <?php
 session_start();
 include_once("../../config/conn.php");
-
+//Data pasien diambil 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $nama = htmlspecialchars($_POST['nama']);
   $alamat = htmlspecialchars($_POST['alamat']);

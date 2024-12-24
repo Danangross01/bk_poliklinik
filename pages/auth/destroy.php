@@ -1,4 +1,5 @@
 <?php 
+// untuk mengakhiri sesi pengguna
 session_start();
 
 session_destroy();
