@@ -42,7 +42,7 @@ Sistem Manajemen Poliklinik adalah aplikasi yang dirancang untuk mempermudah pro
 ## Cara Instalasi
 
 1. **Klon Repository**  
-   LINK GHUB :
+   LINK GHUB : https://github.com/Danangross01/bk_poliklinik.git
 2. **Siapkan Server Web**  
 
 3. **Gunakan server web seperti Apache atau XAMPP.**
@@ -56,11 +56,15 @@ Sistem Manajemen Poliklinik adalah aplikasi yang dirancang untuk mempermudah pro
 9. **Akses Aplikasi**
 
 
+**Nama Folder**
+bk_poliklinik
+
+
 **Admin**
 Username: admin
 Password: admin
 **Dokter**
-Username: Danang
+Username: Ifan
 Password: Semarang
 **Format Username & Password**
 Username: Nama pengguna (contoh: Danang)
@@ -68,5 +72,5 @@ Password: Alamat pengguna (contoh: Semarang)
 **Catatan: Pasien tidak memiliki akun login default karena mereka harus mendaftarkan diri terlebih dahulu untuk mendapatkan akses.**
 
 **Pasien dalam database**
-username : Pasien
+username : Adi
 password : Semarang
