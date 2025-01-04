@@ -7,7 +7,7 @@ if (!isset($_SESSION['login']) || $_SESSION['akses'] != 'dokter') {
     echo "<meta http-equiv='refresh' content='0; url=../auth/login.php'>";
     die();
 }
-
+//RIWAYAT PASIEN (INDEX.PHP)
 // Ambil Nama Dokter dari Sesi
 $doctor_name = $_SESSION['username']; // Nama dokter dari sesi login
 
