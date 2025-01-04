@@ -1,4 +1,3 @@
-
 <?php
 // Sertakan koneksi ke database
 include_once("../../../config/conn.php");
@@ -53,7 +52,6 @@ $obat = query("SELECT * FROM obat");
 
 // Set biaya periksa
 $biaya_periksa = 150000;
-$total_biaya_obat = 0;
 
 // Konfigurasi layout
 $title = 'Poliklinik | Periksa Pasien';
@@ -105,7 +103,7 @@ ob_start();
 
             <div class="form-group">
                 <label for="harga">Total Harga</label>
-                <input type="text" class="form-control" id="harga" name="harga" readonly>
+                <input type="text" class="form-control" id="harga" name="harga" value="150000" readonly>
             </div>
 
             <div class="d-flex justify-content-end">
@@ -122,7 +120,8 @@ ob_start();
             $obat = $_POST['obat'];
             $id_daftar_poli = $pasiens['id_daftar_poli'];
             $id_obat = [];
-            
+            $total_biaya_obat = 0;
+
             foreach ($obat as $data) {
                 list($obat_id, $harga) = explode('|', $data);
                 $id_obat[] = $obat_id;
@@ -158,18 +157,22 @@ ob_start();
         $('#id_obat').select2();
         $('#id_obat').on('change', function() {
             var selectedValues = $(this).val();
-            var total = 150000;
+            var biayaPeriksa = 150000;
+            var totalHarga = biayaPeriksa;
 
-            if (selectedValues) {
+            if (selectedValues && selectedValues.length > 0) {
                 selectedValues.forEach(function(value) {
                     var parts = value.split('|');
                     if (parts.length === 2) {
-                        total += parseInt(parts[1]);
+                        totalHarga += parseInt(parts[1], 10);
                     }
                 });
             }
-            $('#harga').val(total);
+
+            $('#harga').val(totalHarga);
         });
+
+        $('#id_obat').trigger('change');
     });
 </script>
 <?php
