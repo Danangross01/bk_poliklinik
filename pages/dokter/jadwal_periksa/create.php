@@ -20,7 +20,7 @@ if ($akses != 'dokter') {
 }
 
 // Function to check if the schedule already exists for the same day
-function isJadwalExist($id_dokter, $hari) {
+function isHariExist($id_dokter, $hari) {
     global $conn;
     $query = "SELECT COUNT(*) AS count FROM jadwal_periksa 
               WHERE id_dokter = ? AND hari = ?";
@@ -29,10 +29,10 @@ function isJadwalExist($id_dokter, $hari) {
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
-    return $data['count'] > 0;
+    return $data['count'] > 0; // Return true if the count is greater than 0
 }
 
-// Function to add schedule (stub function, implement sesuai kebutuhan)
+// Function to add schedule
 function tambahJadwalPeriksa($data) {
     global $conn;
     $id_dokter = $data['id_dokter'];
@@ -67,8 +67,8 @@ if (isset($_POST["submit"])) {
         $jam_mulai = $_POST['jam_mulai'];
         $jam_selesai = $_POST['jam_selesai'];
 
-        // Cek apakah jadwal dengan hari yang sama sudah ada
-        if (isJadwalExist($id_dokter, $hari)) {
+        // Cek apakah hari sudah ada untuk dokter yang sama
+        if (isHariExist($id_dokter, $hari)) {
             echo "
                 <script>
                     alert('Data Gagal ditambahkan, jadwal untuk hari yang sama sudah ada');
