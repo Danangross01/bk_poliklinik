@@ -1,0 +1,11 @@
+-- Menambahkan tabel keluhan
+CREATE TABLE `keluhan` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `subject` VARCHAR(50) NOT NULL,
+  `pertanyaan` TEXT NOT NULL,
+  `tgl_konsultasi` DATETIME NOT NULL,
+  `id_pasien` INT NOT NULL,
+  `id_dokter` INT NOT NULL,
+  FOREIGN KEY (`id_pasien`) REFERENCES `pasien`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`id_dokter`) REFERENCES `dokter`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
