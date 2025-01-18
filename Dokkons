@@ -1,0 +1,174 @@
+<?php
+include_once("../../config/conn.php");
+session_start();
+
+// Cek apakah user sudah login dan memiliki akses sebagai dokter
+if (!isset($_SESSION['login']) || $_SESSION['akses'] != 'dokter') {
+    echo "<meta http-equiv='refresh' content='0; url=../login.php'>";
+    exit();
+}
+
+$id_dokter = $_SESSION['id'];
+$nama_dokter = $_SESSION['username'];
+
+// Proses Hapus
+if (isset($_POST['hapus'])) {
+    $id_keluhan = $_POST['id_keluhan'];
+    try {
+        $stmt = $pdo->prepare("DELETE FROM keluhan WHERE id = :id_keluhan AND id_dokter = :id_dokter");
+        $stmt->bindParam(':id_keluhan', $id_keluhan, PDO::PARAM_INT);
+        $stmt->bindParam(':id_dokter', $id_dokter, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            echo "<script>alert('Konsultasi berhasil dihapus');</script>";
+        } else {
+            echo "<script>alert('Gagal menghapus konsultasi');</script>";
+        }
+    } catch (PDOException $e) {
+        echo "<script>alert('Error: {$e->getMessage()}');</script>";
+    }
+}
+
+// Proses Update
+if (isset($_POST['update_tanggapan'])) {
+    $id_keluhan = $_POST['id_keluhan'];
+    $jawaban = $_POST['jawaban'];
+
+    if (empty($jawaban)) {
+        echo "<script>alert('Tanggapan tidak boleh kosong!');</script>";
+    } else {
+        try {
+            $stmt = $pdo->prepare("UPDATE keluhan SET jawaban = :jawaban WHERE id = :id_keluhan AND id_dokter = :id_dokter");
+            $stmt->bindParam(':jawaban', $jawaban);
+            $stmt->bindParam(':id_keluhan', $id_keluhan, PDO::PARAM_INT);
+            $stmt->bindParam(':id_dokter', $id_dokter, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                echo "<script>alert('Tanggapan berhasil diperbarui');</script>";
+            } else {
+                echo "<script>alert('Gagal memperbarui tanggapan');</script>";
+            }
+        } catch (PDOException $e) {
+            echo "<script>alert('Error: {$e->getMessage()}');</script>";
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konsultasi | Dokter</title>
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+
+<body>
+<div class="wrapper">
+    <?php include "../../layouts/header.php"; ?>
+
+    <div class="content-wrapper">
+        <section class="content">
+            <div class="container-fluid">
+                <h1>Konsultasi</h1>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header bg-info">Daftar Konsultasi</div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-hover text-center">
+                                    <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Pasien</th>
+                                        <th>Subjek</th>
+                                        <th>Pertanyaan</th>
+                                        <th>Jawaban</th>
+                                        <th>Tanggal Konsultasi</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT k.id, k.subject, k.pertanyaan, k.jawaban, k.tgl_konsultasi, p.username AS pasien 
+                                                           FROM keluhan k 
+                                                           JOIN pasien p ON k.id_pasien = p.id 
+                                                           WHERE k.id_dokter = :id_dokter 
+                                                           ORDER BY k.tgl_konsultasi DESC");
+                                    $stmt->bindParam(':id_dokter', $id_dokter, PDO::PARAM_INT);
+                                    $stmt->execute();
+
+                                    $no = 1;
+
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            echo "<tr>
+                                                    <td>{$no}</td>
+                                                    <td>" . htmlspecialchars($row['pasien']) . "</td>
+                                                    <td>" . htmlspecialchars($row['subject']) . "</td>
+                                                    <td>" . htmlspecialchars($row['pertanyaan']) . "</td>
+                                                    <td>" . htmlspecialchars($row['jawaban'] ?: '-') . "</td>
+                                                    <td>" . date('d-m-Y H:i:s', strtotime($row['tgl_konsultasi'])) . "</td>
+                                                    <td>
+                                                        <button class='btn btn-warning btn-sm' data-toggle='modal' data-target='#editModal{$row['id']}'>Edit</button>
+                                                        <form method='POST' style='display:inline-block;'>
+                                                            <input type='hidden' name='id_keluhan' value='{$row['id']}'>
+                                                            <button type='submit' name='hapus' class='btn btn-danger btn-sm' onclick='return confirm(\"Yakin ingin menghapus konsultasi ini?\");'>Hapus</button>
+                                                        </form>
+                                                    </td>
+                                                  </tr>";
+
+                                            // Modal untuk edit tanggapan
+                                            echo "
+                                            <div class='modal fade' id='editModal{$row['id']}' tabindex='-1' aria-labelledby='modalLabel{$row['id']}' aria-hidden='true'>
+                                                <div class='modal-dialog'>
+                                                    <div class='modal-content'>
+                                                        <div class='modal-header'>
+                                                            <h5 class='modal-title' id='modalLabel{$row['id']}'>Edit Tanggapan</h5>
+                                                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                                                <span aria-hidden='true'>&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <form method='POST'>
+                                                            <div class='modal-body'>
+                                                                <div class='form-group'>
+                                                                    <label for='jawaban'>Tanggapan</label>
+                                                                    <textarea class='form-control' name='jawaban' rows='4' required>" . htmlspecialchars($row['jawaban']) . "</textarea>
+                                                                    <input type='hidden' name='id_keluhan' value='{$row['id']}'>
+                                                                </div>
+                                                            </div>
+                                                            <div class='modal-footer'>
+                                                                <button type='button' class='btn btn-secondary' data-dismiss='modal'>Batal</button>
+                                                                <button type='submit' name='update_tanggapan' class='btn btn-primary'>Simpan</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>";
+                                            $no++;
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='7'>Belum ada konsultasi</td></tr>";
+                                    }
+                                    ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <?php include "../../layouts/footer.php"; ?>
+</div>
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../../dist/js/adminlte.min.js"></script>
+</body>
+
+</html>
