@@ -1,0 +1,173 @@
+<?php
+include_once("../../../config/conn.php");
+session_start();
+
+if (!isset($_SESSION['login']) || $_SESSION['akses'] != 'dokter') {
+  echo "<meta http-equiv='refresh' content='0; url=../'>";
+  die();
+}
+
+$id_dokter = $_SESSION['id'];
+$nama_dokter = $_SESSION['username'];
+
+if (isset($_POST['submit_tanggapan'])) {
+  $id_keluhan = $_POST['id_keluhan'];
+  $tanggapan = $_POST['tanggapan'];
+
+  // Simpan tanggapan dokter ke database
+  $query = $pdo->prepare("UPDATE keluhan SET tanggapan = :tanggapan, status = 'Ditanggapi' WHERE id = :id_keluhan AND id_dokter IS NULL");
+  $query->bindParam(':tanggapan', $tanggapan);
+  $query->bindParam(':id_keluhan', $id_keluhan, PDO::PARAM_INT);
+  if ($query->execute()) {
+    echo "<script>alert('Tanggapan berhasil dikirim.');</script>";
+  } else {
+    echo "<script>alert('Tanggapan gagal dikirim.');</script>";
+  }
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keluhan Pasien | Dashboard Dokter</title>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="../../../plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../../../dist/css/adminlte.min.css">
+</head>
+
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
+    <?php include "../../../layouts/header.php"; ?>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+      <!-- Content Header -->
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">Keluhan Pasien</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <!-- Tanggapan Keluhan -->
+            <div class="col-lg-12">
+              <div class="card">
+                <h5 class="card-header bg-info">Daftar Keluhan Pasien</h5>
+                <div class="card-body">
+                  <table class="table table-striped table-bordered">
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Pasien</th>
+                        <th>Keluhan</th>
+                        <th>Tanggapan</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php
+                      // Query untuk menampilkan keluhan yang belum ditanggapi
+                      $query = $pdo->prepare("SELECT k.id, p.nama AS pasien_nama, k.keluhan, k.tanggapan 
+                                              FROM keluhan k
+                                              JOIN pasien p ON k.id_pasien = p.id
+                                              WHERE k.id_dokter IS NULL
+                                              ORDER BY k.tgl_konsultasi DESC");
+                      $query->execute();
+                      $no = 1;
+                      if ($query->rowCount() == 0) {
+                        echo "<tr><td colspan='5' class='text-center'>Tidak ada keluhan yang belum ditanggapi</td></tr>";
+                      } else {
+                        while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+                          echo "
+                          <tr>
+                            <td>{$no}</td>
+                            <td>{$row['pasien_nama']}</td>
+                            <td>" . htmlspecialchars($row['keluhan']) . "</td>
+                            <td>" . ($row['tanggapan'] ? htmlspecialchars($row['tanggapan']) : 'Belum ditanggapi') . "</td>
+                            <td>
+                              <button class='btn btn-primary btn-sm' data-toggle='modal' data-target='#tanggapanModal' 
+                                data-id='{$row['id']}' data-keluhan='{$row['keluhan']}'>
+                                Tanggapi
+                              </button>
+                            </td>
+                          </tr>";
+                          $no++;
+                        }
+                      }
+                      ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <?php include "../../../layouts/footer.php"; ?>
+  </div>
+
+  <!-- Modal Tanggapan -->
+  <div class="modal fade" id="tanggapanModal" tabindex="-1" aria-labelledby="tanggapanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tanggapanModalLabel">Tanggapi Keluhan Pasien</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="id_keluhan" id="id_keluhan">
+            <div class="form-group">
+              <label for="keluhan">Keluhan Pasien:</label>
+              <textarea class="form-control" id="keluhan" rows="4" disabled></textarea>
+            </div>
+            <div class="form-group">
+              <label for="tanggapan">Tanggapan Dokter:</label>
+              <textarea class="form-control" name="tanggapan" id="tanggapan" rows="4" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            <button type="submit" name="submit_tanggapan" class="btn btn-primary">Kirim Tanggapan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <?php include "../../../layouts/pluginsexport.php"; ?>
+
+  <script>
+    // Menangani data modal untuk tanggapan
+    $('#tanggapanModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      var idKeluhan = button.data('id');
+      var keluhan = button.data('keluhan');
+
+      var modal = $(this);
+      modal.find('#id_keluhan').val(idKeluhan);
+      modal.find('#keluhan').val(keluhan);
+    });
+  </script>
+</body>
+
+</html>
