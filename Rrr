@@ -1,0 +1,58 @@
+<!-- Riwayat Konsultasi -->
+<div class="row mt-4">
+  <div class="col-lg-12">
+    <div class="card">
+      <h5 class="card-header bg-info">Riwayat Konsultasi</h5>
+      <div class="card-body">
+        <table class="table table-bordered table-hover text-center">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Subjek</th>
+              <th>Pertanyaan</th>
+              <th>Dokter</th>
+              <th>Tanggal Konsultasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            try {
+              $riwayat = $pdo->prepare("
+                SELECT 
+                  k.subject, 
+                  k.pertanyaan, 
+                  k.tgl_konsultasi, 
+                  COALESCE(d.nama, 'Dokter Tidak Ditemukan') AS nama_dokter 
+                FROM keluhan k 
+                LEFT JOIN dokter d ON k.id_dokter = d.id 
+                WHERE k.id_pasien = :id_pasien 
+                ORDER BY k.tgl_konsultasi DESC
+              ");
+              $riwayat->bindParam(':id_pasien', $id_pasien, PDO::PARAM_INT);
+              $riwayat->execute();
+
+              $no = 1;
+              if ($riwayat->rowCount() == 0) {
+                echo "<tr><td colspan='5'>Belum ada riwayat konsultasi</td></tr>";
+              } else {
+                while ($row = $riwayat->fetch(PDO::FETCH_ASSOC)) {
+                  echo "<tr>
+                          <td>{$no}</td>
+                          <td>" . htmlspecialchars($row['subject']) . "</td>
+                          <td>" . htmlspecialchars($row['pertanyaan']) . "</td>
+                          <td>" . htmlspecialchars($row['nama_dokter']) . "</td>
+                          <td>" . htmlspecialchars($row['tgl_konsultasi']) . "</td>
+                        </tr>";
+                  $no++;
+                }
+              }
+            } catch (PDOException $e) {
+              echo "<tr><td colspan='5'>Error: " . $e->getMessage() . "</td></tr>";
+            }
+            ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
