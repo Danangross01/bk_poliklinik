@@ -1,0 +1,150 @@
+<?php
+include_once("../../config/conn.php");
+session_start();
+
+if (!isset($_SESSION['login']) || $_SESSION['akses'] != 'pasien') {
+    echo "<meta http-equiv='refresh' content='0; url=../login.php'>";
+    exit();
+}
+
+$id_pasien = $_SESSION['id'];
+$nama_pasien = $_SESSION['username'];
+
+if (isset($_POST['submit'])) {
+    $subject = $_POST['subject'];
+    $pertanyaan = $_POST['pertanyaan'];
+    $id_dokter = $_POST['id_dokter'];
+    $tgl_konsultasi = date('Y-m-d H:i:s');
+
+    if (empty($subject) || empty($pertanyaan) || $id_dokter == '0') {
+        echo "<script>alert('Semua kolom harus diisi!');</script>";
+    } else {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO keluhan (subject, pertanyaan, tgl_konsultasi, id_pasien, id_dokter) 
+                                  VALUES (:subject, :pertanyaan, :tgl_konsultasi, :id_pasien, :id_dokter)");
+            $stmt->bindParam(':subject', $subject);
+            $stmt->bindParam(':pertanyaan', $pertanyaan);
+            $stmt->bindParam(':tgl_konsultasi', $tgl_konsultasi);
+            $stmt->bindParam(':id_pasien', $id_pasien);
+            $stmt->bindParam(':id_dokter', $id_dokter);
+
+            if ($stmt->execute()) {
+                echo "<script>alert('Konsultasi berhasil diajukan');</script>";
+            } else {
+                echo "<script>alert('Konsultasi gagal diajukan');</script>";
+            }
+        } catch (PDOException $e) {
+            echo "<script>alert('Error: {$e->getMessage()}');</script>";
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konsultasi | Pasien</title>
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+
+<body>
+<div class="wrapper">
+    <?php include "../../layouts/header.php"; ?>
+
+    <div class="content-wrapper">
+        <section class="content">
+            <div class="container-fluid">
+                <h1>Konsultasi</h1>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header bg-info">Form Konsultasi</div>
+                            <div class="card-body">
+                                <form action="" method="POST">
+                                    <div class="form-group">
+                                        <label for="subject">Subjek</label>
+                                        <input type="text" class="form-control" id="subject" name="subject" placeholder="Masukkan subjek konsultasi" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pertanyaan">Pertanyaan</label>
+                                        <textarea class="form-control" id="pertanyaan" name="pertanyaan" rows="4" placeholder="Masukkan pertanyaan Anda" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="dokter">Pilih Dokter</label>
+                                        <select id="dokter" class="form-control" name="id_dokter" required>
+                                            <option value="0">Pilih Dokter</option>
+                                            <?php
+                                            $stmt = $pdo->prepare("SELECT id, nama FROM dokter");
+                                            $stmt->execute();
+                                            while ($row = $stmt->fetch()) {
+                                                echo "<option value='{$row['id']}'>{$row['nama']}</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <button type="submit" name="submit" class="btn btn-primary">Ajukan Konsultasi</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12 mt-4">
+                        <div class="card">
+                            <div class="card-header bg-info">Riwayat Konsultasi</div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-hover text-center">
+                                    <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Subjek</th>
+                                        <th>Pertanyaan</th>
+                                        <th>Dokter</th>
+                                        <th>Jawaban</th>
+                                        <th>Tanggal Konsultasi</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php
+                                    $stmt = $pdo->prepare("SELECT k.subject, k.pertanyaan, k.jawaban, k.tgl_konsultasi, COALESCE(d.nama, 'Tidak Diketahui') AS dokter 
+                                                           FROM keluhan k 
+                                                           LEFT JOIN dokter d ON k.id_dokter = d.id 
+                                                           WHERE k.id_pasien = :id_pasien 
+                                                           ORDER BY k.tgl_konsultasi DESC");
+                                    $stmt->bindParam(':id_pasien', $id_pasien, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $no = 1;
+
+                                    if ($stmt->rowCount() > 0) {
+                                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            echo "<tr>
+                                                    <td>{$no}</td>
+                                                    <td>" . htmlspecialchars($row['subject']) . "</td>
+                                                    <td>" . htmlspecialchars($row['pertanyaan']) . "</td>
+                                                    <td>" . htmlspecialchars($row['dokter']) . "</td>
+                                                    <td>" . htmlspecialchars($row['jawaban'] ?: '-') . "</td>
+                                                    <td>" . date('d-m-Y H:i:s', strtotime($row['tgl_konsultasi'])) . "</td>
+                                                  </tr>";
+                                            $no++;
+                                        }
+                                    } else {
+                                        echo "<tr><td colspan='6'>Belum ada riwayat konsultasi</td></tr>";
+                                    }
+                                    ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <?php include "../../layouts/footer.php"; ?>
+</div>
+</body>
+</html>
