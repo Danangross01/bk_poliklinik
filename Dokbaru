@@ -1,0 +1,178 @@
+<?php
+include_once("../../config/conn.php");
+session_start();
+
+// Validasi jika user adalah dokter
+if (!isset($_SESSION['login']) || $_SESSION['akses'] != 'dokter') {
+    echo "<meta http-equiv='refresh' content='0; url=../'>";
+    die();
+}
+
+$id_dokter = $_SESSION['id'];
+$nama_dokter = $_SESSION['username'];
+
+// Proses Hapus Data
+if (isset($_POST['hapus'])) {
+    $id_keluhan = $_POST['id_keluhan'];
+    try {
+        $stmt = $pdo->prepare("DELETE FROM keluhan WHERE id = :id_keluhan");
+        $stmt->bindParam(':id_keluhan', $id_keluhan, PDO::PARAM_INT);
+        if ($stmt->execute()) {
+            echo "<script>alert('Konsultasi berhasil dihapus'); window.location.href='dokter.php';</script>";
+        }
+    } catch (PDOException $e) {
+        echo "<script>alert('Error: {$e->getMessage()}');</script>";
+    }
+}
+
+// Proses Edit Tanggapan
+if (isset($_POST['edit'])) {
+    $id_keluhan = $_POST['id_keluhan'];
+    $jawaban = $_POST['jawaban'];
+
+    try {
+        $stmt = $pdo->prepare("UPDATE keluhan SET jawaban = :jawaban WHERE id = :id_keluhan");
+        $stmt->bindParam(':jawaban', $jawaban, PDO::PARAM_STR);
+        $stmt->bindParam(':id_keluhan', $id_keluhan, PDO::PARAM_INT);
+        if ($stmt->execute()) {
+            echo "<script>alert('Tanggapan berhasil disimpan'); window.location.href='dokter.php';</script>";
+        }
+    } catch (PDOException $e) {
+        echo "<script>alert('Error: {$e->getMessage()}');</script>";
+    }
+}
+
+// Ambil data konsultasi
+try {
+    $stmt = $pdo->prepare("SELECT k.id, k.subject, k.pertanyaan, k.jawaban, k.tgl_konsultasi, 
+                                  COALESCE(p.username, 'Tidak Diketahui') AS pasien 
+                           FROM keluhan k 
+                           LEFT JOIN pasien p ON k.id_pasien = p.id 
+                           WHERE k.id_dokter = :id_dokter 
+                           ORDER BY k.tgl_konsultasi DESC");
+    $stmt->bindParam(':id_dokter', $id_dokter, PDO::PARAM_INT);
+    $stmt->execute();
+} catch (PDOException $e) {
+    echo "<script>alert('Error: {$e->getMessage()}');</script>";
+    die();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Dokter</title>
+    <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../../dist/css/adminlte.min.css">
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+
+        <?php include "../../layouts/header.php"; ?>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Dashboard Dokter</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active">Dashboard Dokter</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header bg-info">
+                            <h5>Konsultasi Pasien</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-hover text-center">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Subjek</th>
+                                        <th>Pertanyaan</th>
+                                        <th>Jawaban</th>
+                                        <th>Pasien</th>
+                                        <th>Tanggal Konsultasi</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $no = 1;
+                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                        echo "
+                                        <tr>
+                                            <td>{$no}</td>
+                                            <td>" . htmlspecialchars($row['subject']) . "</td>
+                                            <td>" . htmlspecialchars($row['pertanyaan']) . "</td>
+                                            <td>" . htmlspecialchars($row['jawaban'] ?: '-') . "</td>
+                                            <td>" . htmlspecialchars($row['pasien']) . "</td>
+                                            <td>" . date('d-m-Y H:i:s', strtotime($row['tgl_konsultasi'])) . "</td>
+                                            <td>
+                                                <button class='btn btn-warning btn-sm' data-toggle='modal' data-target='#editModal{$row['id']}'>Edit</button>
+                                                <form method='POST' style='display:inline-block;'>
+                                                    <input type='hidden' name='id_keluhan' value='{$row['id']}'>
+                                                    <button type='submit' name='hapus' class='btn btn-danger btn-sm' onclick='return confirm(\"Yakin ingin menghapus konsultasi ini?\");'>Hapus</button>
+                                                </form>
+                                            </td>
+                                        </tr>";
+
+                                        // Modal untuk Edit
+                                        echo "
+                                        <div class='modal fade' id='editModal{$row['id']}' tabindex='-1'>
+                                            <div class='modal-dialog'>
+                                                <div class='modal-content'>
+                                                    <div class='modal-header'>
+                                                        <h5 class='modal-title'>Edit Tanggapan</h5>
+                                                        <button type='button' class='close' data-dismiss='modal'>&times;</button>
+                                                    </div>
+                                                    <div class='modal-body'>
+                                                        <form method='POST'>
+                                                            <input type='hidden' name='id_keluhan' value='{$row['id']}'>
+                                                            <div class='form-group'>
+                                                                <label for='jawaban'>Jawaban</label>
+                                                                <textarea name='jawaban' id='jawaban' class='form-control' rows='4'>" . htmlspecialchars($row['jawaban']) . "</textarea>
+                                                            </div>
+                                                            <button type='submit' name='edit' class='btn btn-primary'>Simpan</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>";
+                                        $no++;
+                                    }
+
+                                    if ($stmt->rowCount() == 0) {
+                                        echo "<tr><td colspan='7'>Belum ada konsultasi</td></tr>";
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <?php include "../../layouts/footer.php"; ?>
+    </div>
+    <script src="../../plugins/jquery/jquery.min.js"></script>
+    <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../dist/js/adminlte.min.js"></script>
+</body>
+
+</html>
